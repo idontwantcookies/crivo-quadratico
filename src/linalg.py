@@ -33,12 +33,19 @@ def matrix_mod(A: Matrix, p: int):
 def swap(A: list, i: int, j: int):
     A[i], A[j] = A[j], A[i]
 
-def find_pivot(A: Matrix, j: int) -> int:
-    i, n, m = j, len(A), len(A[0])
-    while i < n and i < m and A[i][j] == 0:
-        i += 1
-    if i in (m, n): return -1
-    return i
+def find_pivot(A: Matrix, j: int, desde: int = None) -> int:
+    '''Retorna o índice da primeira linha i >= `desde` com A[i][j] != 0, ou -1
+    se a coluna j for nula daquela linha para baixo. `desde` vale j por padrão.
+
+    A busca percorre as LINHAS. Limitá-la também pelo número de COLUNAS, como
+    era feito antes (`while i < n and i < m`), fazia uma matriz 3x2 devolver -1
+    mesmo havendo pivô na linha 2.
+
+    Exemplo: find_pivot([[0, 0], [0, 0], [1, 1]], 0) => 2'''
+    if not A or j < 0 or j >= len(A[0]): return -1
+    for i in range(j if desde is None else desde, len(A)):
+        if A[i][j] != 0: return i
+    return -1
 
 def sum_vectors(*vectors: list[Vector]) -> Vector:
     acc = []
@@ -83,17 +90,31 @@ def gauss_reduce_row(row: Vector, pivot: Vector, i: int):
     return row
 
 def rref(A: Matrix) -> Matrix:
-    '''Reduz uma matriz N x M à sua forma escalonada (Reduced Row Echelon Form) usando o método
-    de Gauss. Complexidade: O(N²)'''
-    A = A.copy()
-    N = len(A)
-    for i in range(N):
-        p = find_pivot(A, i)
-        if p == -1 or A[p][p] == 0: continue
-        swap(A, i, p)
-        pivot_row = A[i]
-        for j in range(i + 1, N):
-            A[j] = gauss_reduce_row(A[j], pivot_row, i)
+    '''Reduz uma matriz N x M à forma escalonada por linhas (row echelon form)
+    pelo método de Gauss, sobre os racionais. Complexidade: O(N * M * min(N, M)).
+
+    A linha do pivô e a coluna do pivô avançam de forma INDEPENDENTE: quando
+    uma coluna não tem pivô (matriz de posto deficiente), passa-se para a
+    coluna seguinte sem consumir uma linha. Antes o índice servia às duas
+    coisas ao mesmo tempo, o que testava `A[p][p]` no lugar de `A[p][col]` e
+    ignorava as colunas além da N-ésima.
+
+    Não normaliza os pivôs para 1 nem elimina acima deles — ou seja, devolve a
+    forma escalonada, não a *reduzida*, apesar do nome. Para álgebra linear
+    sobre GF(2) use `rref_gf2` / `kernel_gf2`, que trabalham com máscaras de
+    bits e não com a divisão em ponto flutuante usada aqui.'''
+    A = [list(row) for row in A]
+    if not A or not A[0]: return A
+    N, M = len(A), len(A[0])
+    linha = 0
+    for col in range(M):
+        if linha >= N: break
+        p = find_pivot(A, col, linha)
+        if p == -1: continue                  # coluna sem pivô: não gasta linha
+        swap(A, linha, p)
+        for j in range(linha + 1, N):
+            A[j] = gauss_reduce_row(A[j], A[linha], col)
+        linha += 1
     return A
 
 def kernel(A: sympy.Matrix | Matrix) -> Matrix:

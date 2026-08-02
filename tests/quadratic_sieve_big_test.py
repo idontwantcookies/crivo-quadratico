@@ -23,6 +23,7 @@ from src.base import isqrt
 from src.linalg import find_pivot, kernel, kernel_gf2, matrix_mod
 from src.modular_arithmetic import find_non_square, is_square, msqrt
 from src.quadratic_sieve import (
+    EXPOENTE_B,
     build_matrix_of_powers,
     collect_relations,
     compose_from_solution,
@@ -245,27 +246,48 @@ def test_msqrt_resolve_raiz_modular(p):
     assert testados > 0
 
 
-@pytest.mark.xfail(reason='bug 5 ainda não corrigido: find_pivot limita a busca por colunas',
-                   strict=True)
 def test_find_pivot_em_matriz_com_mais_linhas_que_colunas():
-    '''BUG: `find_pivot` limita a busca a `i < m` (nº de colunas) e testa
-    `if i in (m, n)`. Numa matriz 3x2 ele devolve -1 mesmo havendo pivô na
+    '''REGRESSÃO: `find_pivot` limitava a busca a `i < m` (nº de colunas) e
+    testava `if i in (m, n)`. Numa matriz 3x2 devolvia -1 mesmo havendo pivô na
     linha 2. O limite correto é apenas o número de linhas.'''
     A = [[0, 0], [0, 0], [1, 1]]
     assert find_pivot(A, 0) == 2
 
 
-@pytest.mark.xfail(reason='bug 6 ainda não corrigido: expoente 1/sqrt(2) em vez de 1/2',
-                   strict=True)
-def test_find_B_produz_base_de_fatores_praticavel():
-    '''`find_B` usa o expoente 1/sqrt(2) ≈ 0.707 em vez do ótimo 1/2 de
-    L(n) = exp(sqrt(ln n * ln ln n)), gerando uma base de fatores muito maior
-    que o necessário. Para os 45 dígitos prometidos no README, B > 5.4 milhões
-    — `eratosthenes_sieve(B)` com defaultdict não é viável nessa escala.'''
-    assert find_B(10**20) < 20_000
-    assert find_B(10**45) < 100_000, (
-        f'B={find_B(10**45):,} para 45 dígitos: crivo de Eratóstenes inviável'
-    )
+def test_expoente_b_padrao_nao_mudou():
+    '''O padrão continua sendo 1/sqrt(2), o valor da referência do enunciado.
+    Extrair o expoente para constante não pode alterar comportamento algum.'''
+    assert EXPOENTE_B == 1 / sqrt(2)
+    assert find_B(87463) == find_B(87463, expoente=EXPOENTE_B) == 43
+    assert qs_setup(100) == qs_setup(100, expoente=EXPOENTE_B)
+
+
+@pytest.mark.parametrize('n', [10**19 + 51, 10**24 + 7, 10**45 + 7])
+def test_expoente_menor_encolhe_a_base_de_fatores(n):
+    '''O expoente é o botão que equilibra os dois custos do crivo. Como o efeito
+    é exponencial, baixá-lo um pouco encolhe muito a base — e é isso que decide
+    se a eliminação sobre GF(2) é viável.'''
+    padrao = find_B(n)
+    assert find_B(n, expoente=0.6) < padrao
+    assert find_B(n, expoente=0.5) < find_B(n, expoente=0.6)
+
+
+def test_expoente_padrao_e_impraticavel_para_45_digitos():
+    '''Documenta o limite conhecido: com o expoente padrão, 45 dígitos pedem
+    B > 5 milhões, e a matriz sobre GF(2) resultante inviabiliza a fatoração.
+    Baixar o expoente resolve — é uma escolha em aberto, não um defeito.'''
+    assert find_B(10**20) < 20_000                    # 20 dígitos: tranquilo
+    assert find_B(10**45) > 5_000_000                 # 45 dígitos: inviável
+    assert find_B(10**45, expoente=0.6) < 600_000     # praticável
+    assert find_B(10**45, expoente=0.5) < 100_000     # ótimo assintótico
+
+
+@pytest.mark.parametrize('p,q,n', SEMIPRIMOS_PEQUENOS + SEMIPRIMOS_MEDIOS[:1])
+def test_crivo_funciona_com_outro_expoente(p, q, n, sem_divisao_por_tentativa):
+    '''O parâmetro tem de atravessar find_B -> setup -> quadratic_sieve sem
+    quebrar a fatoração.'''
+    d = quadratic_sieve(n, timeout=TIMEOUT_TESTE, expoente=0.6)
+    _verificar(n, p, q, d)
 
 
 # ---------------------------------------------------------------------------

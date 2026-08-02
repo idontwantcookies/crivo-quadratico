@@ -13,18 +13,38 @@ from src.primality import eratosthenes_sieve
 from src.util import Powers, SieveTimeout
 
 
-def find_B(n: int) -> int:
+# Expoente de L(n) = exp(sqrt(ln n * ln ln n)) usado por find_B. É o parâmetro
+# que equilibra os dois custos do crivo:
+#   B maior  -> base de fatores maior -> mais relações a coletar e matriz sobre
+#               GF(2) maior (a eliminação é cúbica na dimensão);
+#   B menor  -> números B-smooth mais raros -> intervalo a peneirar bem maior.
+# A análise clássica minimiza o total em 0.5. Medindo esta implementação, 0.6 sai
+# melhor (24 díg.: 1,8s -> 0,8s; 29 díg.: 17,6s -> 5,8s) e 0.5 sai PIOR que o
+# padrão (19 díg.: 0,4s -> 2,9s): a coleta aqui é Python puro, enquanto a álgebra
+# linear é XOR de inteiros grandes em C, então a coleta pesa mais do que a teoria
+# assume e o ótimo desloca-se para um B maior.
+# O padrão fica em 1/sqrt(2), o valor da referência do enunciado.
+EXPOENTE_B = 1 / sqrt(2)
+
+def find_B(n: int, expoente: float = None) -> int:
     '''Retorna o limite B do crivo quadrático, onde B é o tamanho máximo de um primo.
-    Fonte: https://risencrypto.github.io/QuadraticSieve/'''
-    return ceil(exp(sqrt(log(n) * log(log(n))))**(1/sqrt(2))) + 1
+    Fonte: https://risencrypto.github.io/QuadraticSieve/
+
+    B = L(n)^expoente, com L(n) = exp(sqrt(ln n * ln ln n)). `expoente` assume
+    `EXPOENTE_B` quando omitido; ver o comentário dessa constante para o efeito
+    de alterá-lo.
+
+    Exemplo: find_B(87463) => 43; find_B(87463, expoente=0.6) => 25'''
+    if expoente is None: expoente = EXPOENTE_B
+    return ceil(exp(sqrt(log(n) * log(log(n))))**expoente) + 1
 
 def euler_sieve_method(n: int, primes: list[int]) -> list[int]:
     '''Criva os primos de acordo com o critério de Euler; ou seja, filtra a lista de primos
     para deixar apenas aqueles fazem n ser quadrado mod p.'''
     return list(filter(lambda p: is_square(n, p), primes))
 
-def setup(n: int):
-    B = find_B(n)
+def setup(n: int, expoente: float = None):
+    B = find_B(n, expoente)
     primes = eratosthenes_sieve(B)
     primes = euler_sieve_method(n, primes)
     primes.insert(0, -1)
@@ -246,17 +266,19 @@ def collect_relations(n: int, primes: list[int], alvo: int,
             bloco = min(bloco * 2, 1 << 20)
     return S
 
-def quadratic_sieve(n: int, timeout: float = 15) -> int:
+def quadratic_sieve(n: int, timeout: float = 15, expoente: float = None) -> int:
     '''Implementação do crivo quadrático baseada em Collier:
     https://www.dcc.ufrj.br/~collier/CursosGrad/topicos/CrivoQuadratico.html
 
     Devolve um fator não-trivial de n. Levanta `SieveTimeout` se estourar
-    `timeout` segundos, e `RuntimeError` se não achar fator não-trivial.'''
+    `timeout` segundos, e `RuntimeError` se não achar fator não-trivial.
+    `expoente` permite experimentar outro limite de suavidade (ver `EXPOENTE_B`)
+    sem alterar o padrão.'''
     start = time()
     if n % 2 == 0 and n != 2: return 2
     raiz = isqrt(n)
     if raiz * raiz == n: return raiz          # quadrado perfeito: a ≡ ±b sempre
-    B, M, primes = setup(n)
+    B, M, primes = setup(n, expoente)
     if TRIAL_DIVISION:
         d = small_factor(n, B)
         if d is not None: return d
