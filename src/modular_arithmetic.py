@@ -89,16 +89,29 @@ def find_non_square(p: int) -> int:
     raise ValueError("Failed to find non-quadratic residue.")
 
 def msqrt(a: int, p:int,  d: int) -> int:
-    '''Calcula uma raiz quadrada modular de a mod p, onde p é primo e p > 2.
-    d é um inteiro qualquer que não é resíduo quadrático.'''
-    m = 0
+    '''Calcula uma raiz quadrada modular de a mod p, onde p é primo.
+    d é um inteiro qualquer que não é resíduo quadrático mod p.
+
+    Algoritmo de Tonelli-Shanks. Escreve-se p - 1 = 2^s * t com t ímpar e
+    tomam-se A = a^t, D = d^t. Como d não é resíduo, D tem ordem exatamente
+    2^s, e existe m par com A * D^m ≡ 1 (mod p). Os bits de m são descobertos
+    um a um: o bit j vale 1 exatamente quando (A * D^m)^(2^(s-1-j)) ≡ -1.
+    Achado m, a raiz é a^((t+1)/2) * D^(m/2).
+
+    Exemplo: msqrt(2, 17, 3) => 6, pois 6² = 36 ≡ 2 (mod 17)'''
+    a %= p
+    if a == 0: return 0
+    if p == 2: return a
     s, t = oddify(p - 1)
     A = pow(a, t, p)
     D = pow(d, t, p)
-    for j in range(1, s + 1):
-        if pow(A * pow(D,m,p), pow(2, s-1-j, p), p) == -1:
-            m += pow(2,j-1)
-    return (pow(a, (t+1)//2, p) * pow(D, m//2, p)) % p
+    m = 0
+    for j in range(s):
+        # O expoente é o inteiro 2^(s-1-j), NÃO 2^(s-1-j) mod p; e a condição
+        # é ≡ p-1, já que pow() devolve sempre um valor em [0, p).
+        if pow(A * pow(D, m, p) % p, 1 << (s - 1 - j), p) == p - 1:
+            m += 1 << j
+    return pow(a, (t + 1) // 2, p) * pow(D, m // 2, p) % p
 
 def find_generator(n:int, phi:int, f:dict[int,int], timeout:int=15) -> int:
     '''Algoritmo probabilístico para achar um gerador g do grupo de inteiros

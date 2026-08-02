@@ -26,7 +26,7 @@ def factor_out(n: int, p: int) -> tuple[int, int]:
         alpha += 1
     return u, alpha
 
-def factor_with_limited_primes(n: int, primes: list[int]) -> Powers:
+def factor_with_limited_primes(n: int, primes: list[int]) -> tuple[Powers, int]:
     '''Retorna u, {p1: alpha1, p2:alpha2, ..., pk:alphak} tais que
     k é o tamanho da lista de primos passada, e
     n = p1^alpha1 * p2^alpha2 * ... * pk^alphak * u
@@ -68,7 +68,7 @@ def pollard_rho_factor(n: int, timeout:int=15) -> int:
                 break
     error(f"Tempo excedido: não foi possível encontrar um fator de n - 1. Tempo máximo: {timeout}")
 
-def pollard_rho_prime_power_decomposition(n: int, primes:list[int]=None, count=1) -> Counter[int, int]:
+def pollard_rho_prime_power_decomposition(n: int, primes:list[int]=None, count=1) -> Counter[int]:
     '''
     Usa o algoritmo Pollard's rho para encontrar a decomposição em potências de
     primos de n.
