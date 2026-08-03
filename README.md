@@ -10,7 +10,7 @@
   <img alt="Testes: pytest" src="https://img.shields.io/badge/Testes-pytest-0A9EDC?logo=pytest&logoColor=white">
 </p>
 
-**[🔗 Demonstração interativa no navegador](https://idontwantcookies.github.io/ubiquitous-octo-funicular/)** —
+**[🔗 Demonstração interativa no navegador](https://idontwantcookies.github.io/crivo-quadratico/)** —
 roda o código deste repositório direto no seu navegador, via WebAssembly, sem instalar nada.
 
 ---
