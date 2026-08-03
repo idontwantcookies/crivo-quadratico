@@ -32,8 +32,8 @@ os racionais que o crivo não utiliza).
 ## Início rápido
 
 ```bash
-git clone https://github.com/idontwantcookies/ubiquitous-octo-funicular.git
-cd ubiquitous-octo-funicular
+git clone https://github.com/idontwantcookies/crivo-quadratico.git
+cd crivo-quadratico
 pip install -r requirements.txt
 
 python tp2.py
@@ -138,17 +138,20 @@ Testes marcados como `slow` fatoram semiprimos grandes e levam dezenas de segund
 
 ## Demonstração no navegador
 
-A pasta `docs/` contém uma página estática que executa **o código-fonte real** de `src/`
+Os arquivos `index.html`, `main.py`, `pyscript.json` e `style.css`, na raiz do
+repositório, formam uma página estática que executa **o código-fonte real** de `src/`
 dentro do navegador, via [PyScript](https://pyscript.net) e Pyodide (CPython compilado
-para WebAssembly). Nada foi reescrito em JavaScript e não há back-end: os módulos são
-buscados direto do repositório em tempo de execução.
+para WebAssembly). Nada foi reescrito em JavaScript e não há back-end: `src/` é uma pasta
+irmã de `index.html`, então os módulos são lidos por um caminho relativo local (mesma
+origem) — sem fetch de rede e sem depender de nenhuma branch específica no GitHub.
 
 A página demonstra o teste de primalidade de Miller-Rabin, com o veredito rodada a rodada,
-e o logaritmo discreto por Pohlig-Hellman, com a fatoração de `p − 1` e a verificação do
-resultado.
+o logaritmo discreto por Pohlig-Hellman (com a fatoração de `p − 1` e a verificação do
+resultado), e um terminal Python interativo com os módulos já importados, pra testar a
+biblioteca sem instalar nada.
 
 Para publicar num fork: **Settings → Pages → Deploy from a branch**, apontando para a
-pasta `/docs`. Se mudar o nome da branch, atualize o caminho `{SRC}` em `docs/pyscript.json`.
+raiz (`/`) do repositório.
 
 ## Estrutura
 
@@ -156,7 +159,10 @@ pasta `/docs`. Se mudar o nome da branch, atualize o caminho `{SRC}` em `docs/py
 ├── src/                  # módulos da biblioteca
 ├── tests/                # suíte pytest
 ├── big_numbers/          # casos de teste de referência (gerados via GMP)
-├── docs/                 # demonstração web (PyScript + Pyodide)
+├── index.html            # demonstração web (PyScript + Pyodide)
+├── main.py               # lógica Python da demonstração
+├── pyscript.json         # config de arquivos do Pyodide
+├── style.css             # estilo da demonstração
 ├── tp2.py                # CLI: lê N e fatora
 ├── makefile              # atalhos de teste, lint e build do gerador C++
 └── requirements.txt

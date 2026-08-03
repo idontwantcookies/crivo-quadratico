@@ -21,7 +21,7 @@ from src.discrete_log import pohlig_hellman
 from src.factorization import pollard_rho_prime_power_decomposition
 from src.modular_arithmetic import find_generator, is_generator, powmod
 from src.primality import miller_test, prime_miller_rabin
-
+from src.rsa import random_prime
 
 # ---------------------------------------------------------------- boot ----
 
@@ -35,7 +35,7 @@ def parse_int(raw: str) -> int:
 
 # ------------------------------------------------------- primalidade ------
 
-MR_MAX_DIGITS = 200
+MR_MAX_DIGITS = 2000
 
 
 @when("change", "#mr-preset")

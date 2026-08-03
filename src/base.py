@@ -25,8 +25,10 @@ def gcd(a:int, b:int) -> int:
     '''Implementa recursivamente o cálculo do MDC entre a e b
     usando o algoritmo de Euclides. Complexidade: O(log(min(a, b))).
     Exemplo: gcd(7178655232, 1426532525) => 997'''
-    if a == 0: return b
-    return gcd(b % a, a)
+    if a < b: a, b = b, a
+    while b != 0:
+        a, b = b, a % b
+    return a
 
 def gcd_extended(a:int, b:int) -> tuple[int, int, int]:
     '''Implementa recursivamente o cálculo do MDC entre a e b

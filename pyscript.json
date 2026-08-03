@@ -1,6 +1,6 @@
 {
   "files": {
-    "{SRC}": "https://raw.githubusercontent.com/idontwantcookies/ubiquitous-octo-funicular/claude/src",
+    "{SRC}": "./src",
     "{DEST}": "./src/",
     "{SRC}/__init__.py": "{DEST}",
     "{SRC}/base.py": "{DEST}",
