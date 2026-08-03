@@ -35,7 +35,7 @@ def parse_int(raw: str) -> int:
 
 # ------------------------------------------------------- primalidade ------
 
-MR_MAX_DIGITS = 2000
+MR_MAX_DIGITS = 200
 
 
 @when("change", "#mr-preset")
