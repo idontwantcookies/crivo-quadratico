@@ -38,7 +38,13 @@
       </div>
     </header>
 
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="demo" type="button" role="tab" aria-selected="true">Apresentação</button>
+      <button class="tab-btn" data-tab="terminal" type="button" role="tab" aria-selected="false">Terminal Python</button>
+    </div>
+
     <main>
+      <div class="tab-panel" id="tab-demo">
       <section class="card" id="primality">
         <div class="card-head">
           <h2>Teste de primalidade — Miller-Rabin</h2>
@@ -101,6 +107,41 @@
           <p class="hint">Já preenchido com um exemplo — clique em Resolver, ou gere um caso aleatório novo.</p>
         </div>
       </section>
+      </div>
+
+      <div class="tab-panel hidden" id="tab-terminal">
+        <section class="card" id="terminal-card">
+          <div class="card-head">
+            <h2>Terminal Python — teste a biblioteca sem instalar</h2>
+            <p>
+              Console interativo rodando de verdade no seu navegador (o mesmo Pyodide da
+              aba de apresentação). Os módulos deste repositório já estão importados como
+              <code>base</code>, <code>util</code>, <code>modular_arithmetic</code>,
+              <code>primality</code>, <code>factorization</code>, <code>discrete_log</code>
+              e <code>rsa</code> — chame as funções direto, sem <code>pip install</code>.
+            </p>
+          </div>
+          <div class="terminal">
+            <div id="term-output" class="term-output">
+              <p class="hint">
+                Experimente, por exemplo: <code>primality.prime_miller_rabin(97)</code>,
+                <code>factorization.pollard_rho_prime_power_decomposition(360)</code> ou
+                <code>modular_arithmetic.powmod(2, 10, 1000)</code>.
+              </p>
+            </div>
+            <div class="term-input-row">
+              <span class="term-prompt">&gt;&gt;&gt;</span>
+              <textarea id="term-input" class="term-input" rows="2" spellcheck="false"
+                autocomplete="off" placeholder="digite código Python aqui…"></textarea>
+            </div>
+          </div>
+          <div class="term-actions">
+            <button id="term-clear" class="secondary" type="button">Limpar terminal</button>
+            <button id="term-reset" class="secondary" type="button">Reiniciar sessão</button>
+            <span class="term-hint">Enter executa · Shift+Enter nova linha · ↑/↓ histórico</span>
+          </div>
+        </section>
+      </div>
     </main>
 
     <footer>
@@ -114,6 +155,21 @@
       </p>
     </footer>
   </div>
+
+  <script>
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
+        document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
+      });
+    });
+  </script>
 
   <script type="py" src="./main.py" config="./pyscript.json"></script>
 </body>

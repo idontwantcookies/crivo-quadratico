@@ -8,6 +8,7 @@
     "{SRC}/modular_arithmetic.py": "{DEST}",
     "{SRC}/primality.py": "{DEST}",
     "{SRC}/factorization.py": "{DEST}",
-    "{SRC}/discrete_log.py": "{DEST}"
+    "{SRC}/discrete_log.py": "{DEST}",
+    "{SRC}/rsa.py": "{DEST}"
   }
 }

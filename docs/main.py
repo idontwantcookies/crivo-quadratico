@@ -6,11 +6,15 @@ teoria dos números foi reescrita aqui; ela mora inteiramente em src/.
 """
 
 import asyncio
+import contextlib
+import html
+import io
 import platform
 import random
 import time
+import traceback
 
-from pyscript import web, when
+from pyscript import document, web, when
 
 from src.base import ilog10, oddify
 from src.discrete_log import pohlig_hellman
@@ -220,3 +224,127 @@ async def dlog_run(event=None):
         out.innerHTML = f"<p class='error'>{type(exc).__name__}: {exc}</p>"
     finally:
         button.disabled = False
+
+
+# --------------------------------------------------------- terminal ------
+# Console interativo: cada bloco digitado roda num namespace persistente que
+# já vem com os módulos reais do repositório importados (mesmos usados nos
+# cards acima), pra dar pra "brincar" com a lib sem instalar nada.
+
+
+def make_terminal_namespace() -> dict:
+    import src.base as base
+    import src.discrete_log as discrete_log
+    import src.factorization as factorization
+    import src.modular_arithmetic as modular_arithmetic
+    import src.primality as primality
+    import src.rsa as rsa
+    import src.util as util
+
+    return {
+        "__name__": "__console__",
+        "base": base,
+        "util": util,
+        "modular_arithmetic": modular_arithmetic,
+        "primality": primality,
+        "factorization": factorization,
+        "discrete_log": discrete_log,
+        "rsa": rsa,
+        "random": random,
+    }
+
+
+term_ns = make_terminal_namespace()
+term_history: list[str] = []
+term_history_index = None
+
+
+def run_terminal_source(source: str) -> tuple[str, bool]:
+    buf = io.StringIO()
+    is_error = False
+    stripped = source.strip()
+    try:
+        with contextlib.redirect_stdout(buf):
+            if stripped and "\n" not in stripped:
+                try:
+                    result = eval(compile(stripped, "<terminal>", "eval"), term_ns)
+                    if result is not None:
+                        print(repr(result))
+                except SyntaxError:
+                    exec(compile(source, "<terminal>", "exec"), term_ns)
+            else:
+                exec(compile(source, "<terminal>", "exec"), term_ns)
+    except Exception:  # noqa: BLE001 - qualquer erro do código do usuário vira traceback na tela
+        is_error = True
+        traceback.print_exc(file=buf)
+    return buf.getvalue(), is_error
+
+
+def append_terminal_block(source: str, output: str, is_error: bool) -> None:
+    term_output = web.page["term-output"]
+    lines = source.split("\n")
+    prompt_html = "".join(
+        f"<div>{'&gt;&gt;&gt; ' if i == 0 else '... '}{html.escape(line)}</div>"
+        for i, line in enumerate(lines)
+    )
+    output_html = ""
+    if output:
+        css_class = "term-error" if is_error else "term-result"
+        output_html = f"<pre class='{css_class}'>{html.escape(output)}</pre>"
+    term_output.innerHTML += f"<div class='term-block'>{prompt_html}{output_html}</div>"
+
+    term_output_dom = document.getElementById("term-output")
+    term_output_dom.scrollTop = term_output_dom.scrollHeight
+
+
+@when("keydown", "#term-input")
+def term_keydown(event):
+    global term_history_index
+
+    textarea = web.page["term-input"]
+
+    if event.key == "Enter" and not event.shiftKey:
+        event.preventDefault()
+        source = textarea.value
+        if not source.strip():
+            return
+        textarea.value = ""
+        term_history.append(source)
+        term_history_index = None
+
+        output, is_error = run_terminal_source(source)
+        append_terminal_block(source, output, is_error)
+        return
+
+    if event.key == "ArrowUp" and term_history:
+        if term_history_index is None:
+            term_history_index = len(term_history) - 1
+        elif term_history_index > 0:
+            term_history_index -= 1
+        textarea.value = term_history[term_history_index]
+        event.preventDefault()
+        return
+
+    if event.key == "ArrowDown" and term_history_index is not None:
+        if term_history_index < len(term_history) - 1:
+            term_history_index += 1
+            textarea.value = term_history[term_history_index]
+        else:
+            term_history_index = None
+            textarea.value = ""
+        event.preventDefault()
+        return
+
+
+@when("click", "#term-clear")
+def term_clear(event=None):
+    web.page["term-output"].innerHTML = ""
+
+
+@when("click", "#term-reset")
+def term_reset(event=None):
+    global term_ns
+    term_ns = make_terminal_namespace()
+    web.page["term-output"].innerHTML = (
+        "<p class='hint'>Sessão reiniciada — variáveis e imports anteriores foram apagados.</p>"
+    )
