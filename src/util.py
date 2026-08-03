@@ -15,6 +15,14 @@ class Timer:
         print(f"Tempo de execução: {t:.3f}ms.")
         print()
 
+class SieveTimeout(Exception):
+    '''Levantada quando um algoritmo excede o tempo limite dado.
+
+    Existe para que a biblioteca não chame exit() no meio de um cálculo: isso
+    mataria o processo de quem a usa e, nos testes, transforma um estouro de
+    tempo em SystemExit no lugar de uma falha tratável.'''
+
+
 def error(msg:str):
     print(msg)
     exit(1)

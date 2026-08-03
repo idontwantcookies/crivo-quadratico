@@ -26,7 +26,7 @@ def factor_out(n: int, p: int) -> tuple[int, int]:
         alpha += 1
     return u, alpha
 
-def factor_with_limited_primes(n: int, primes: list[int]) -> Powers:
+def factor_with_limited_primes(n: int, primes: list[int]) -> tuple[Powers, int]:
     '''Retorna u, {p1: alpha1, p2:alpha2, ..., pk:alphak} tais que
     k é o tamanho da lista de primos passada, e
     n = p1^alpha1 * p2^alpha2 * ... * pk^alphak * u
@@ -68,7 +68,7 @@ def pollard_rho_factor(n: int, timeout:int=15) -> int:
                 break
     error(f"Tempo excedido: não foi possível encontrar um fator de n - 1. Tempo máximo: {timeout}")
 
-def pollard_rho_prime_power_decomposition(n: int, primes:list[int]=None, count=1) -> Counter[int, int]:
+def pollard_rho_prime_power_decomposition(n: int, primes:list[int]=None, count=1) -> Counter[int]:
     '''
     Usa o algoritmo Pollard's rho para encontrar a decomposição em potências de
     primos de n.
@@ -86,6 +86,11 @@ def pollard_rho_prime_power_decomposition(n: int, primes:list[int]=None, count=1
     else:
         x = pollard_rho_factor(n)
     y, i = factor_out(n, x)
-    x_factors = pollard_rho_prime_power_decomposition(x, primes, count + i - 1)
+    # n = x**i * y, e esta chamada representa a fatoração de n**count (n
+    # aparece `count` vezes no ancestral). Logo x**i contribui i*count vezes,
+    # não count+i-1: as duas fórmulas só coincidem quando count==1 ou i==1,
+    # o que mascarava o bug em números com fatores repetidos aninhados (ex.:
+    # phi(n) com potência de primo >= 4, como 2**6 no fluxo do log discreto).
+    x_factors = pollard_rho_prime_power_decomposition(x, primes, count * i)
     y_factors = pollard_rho_prime_power_decomposition(y, primes, count)
     return x_factors + y_factors
