@@ -86,6 +86,11 @@ def pollard_rho_prime_power_decomposition(n: int, primes:list[int]=None, count=1
     else:
         x = pollard_rho_factor(n)
     y, i = factor_out(n, x)
-    x_factors = pollard_rho_prime_power_decomposition(x, primes, count + i - 1)
+    # n = x**i * y, e esta chamada representa a fatoração de n**count (n
+    # aparece `count` vezes no ancestral). Logo x**i contribui i*count vezes,
+    # não count+i-1: as duas fórmulas só coincidem quando count==1 ou i==1,
+    # o que mascarava o bug em números com fatores repetidos aninhados (ex.:
+    # phi(n) com potência de primo >= 4, como 2**6 no fluxo do log discreto).
+    x_factors = pollard_rho_prime_power_decomposition(x, primes, count * i)
     y_factors = pollard_rho_prime_power_decomposition(y, primes, count)
     return x_factors + y_factors

@@ -1,0 +1,13 @@
+{
+  "files": {
+    "{SRC}": "https://raw.githubusercontent.com/idontwantcookies/ubiquitous-octo-funicular/claude/src",
+    "{DEST}": "./src/",
+    "{SRC}/__init__.py": "{DEST}",
+    "{SRC}/base.py": "{DEST}",
+    "{SRC}/util.py": "{DEST}",
+    "{SRC}/modular_arithmetic.py": "{DEST}",
+    "{SRC}/primality.py": "{DEST}",
+    "{SRC}/factorization.py": "{DEST}",
+    "{SRC}/discrete_log.py": "{DEST}"
+  }
+}

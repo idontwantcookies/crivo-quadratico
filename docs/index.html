@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teoria dos números em Python — demo interativa</title>
+<meta name="description" content="Demonstração interativa, 100% Python, dos algoritmos de teoria dos números deste repositório (Miller-Rabin, Pohlig-Hellman) — rodando direto no navegador via Pyodide, sem back-end e sem transpilar para JS.">
+
+<link rel="stylesheet" href="https://pyscript.net/releases/2026.7.3/core.css">
+<script type="module" src="https://pyscript.net/releases/2026.7.3/core.js"></script>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body class="booting">
+
+  <div id="boot-screen">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Carregando o interpretador Python no navegador (Pyodide)…</p>
+    <p class="boot-hint">Leva alguns segundos na primeira visita; depois fica em cache do navegador.</p>
+  </div>
+
+  <div id="app">
+    <header>
+      <div class="header-inner">
+        <p class="kicker">TP2 · Álgebra A</p>
+        <h1>Teoria dos números, ao vivo, em Python puro</h1>
+        <p class="subtitle">
+          Esta página não tem back-end nem reescreve nada em JavaScript: ela baixa e
+          executa, dentro do seu navegador, o código-fonte real de <code>src/*.py</code>
+          deste repositório, via <a href="https://pyscript.net" target="_blank" rel="noopener">PyScript</a>
+          + Pyodide (Python compilado para WebAssembly).
+        </p>
+        <div class="badges">
+          <span class="badge" id="py-version-badge">Python…</span>
+          <span class="badge">Sem servidor</span>
+          <span class="badge">Código-fonte sem transpilar</span>
+          <a class="badge link" href="https://github.com/idontwantcookies/ubiquitous-octo-funicular" target="_blank" rel="noopener">Ver repositório ↗</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="card" id="primality">
+        <div class="card-head">
+          <h2>Teste de primalidade — Miller-Rabin</h2>
+          <p>
+            Roda <code>prime_miller_rabin</code> e mostra, rodada a rodada, o veredito de
+            <code>miller_test</code> para cada base aleatória — a mesma função usada
+            internamente pelo módulo de fatoração para decidir quando parar de dividir.
+          </p>
+        </div>
+        <div class="controls">
+          <div class="field grow">
+            <label for="mr-n">N</label>
+            <input id="mr-n" type="text" inputmode="numeric" value="561" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="mr-preset">exemplos</label>
+            <select id="mr-preset">
+              <option value="">escolher…</option>
+              <option value="561">561 (nº de Carmichael)</option>
+              <option value="1105">1105 (nº de Carmichael)</option>
+              <option value="104729">104729 (10.000º primo)</option>
+              <option value="8191">8191 (primo de Mersenne)</option>
+              <option value="999999937">999999937 (primo grande)</option>
+              <option value="100000">100000 (composto trivial)</option>
+            </select>
+          </div>
+          <button id="mr-run" class="primary" type="button">Testar</button>
+        </div>
+        <div id="mr-output" class="output">
+          <p class="hint">Escolha um N (ou um exemplo) e clique em Testar.</p>
+        </div>
+      </section>
+
+      <section class="card" id="dlog">
+        <div class="card-head">
+          <h2>Logaritmo discreto — Pohlig-Hellman</h2>
+          <p>
+            Resolve <code>x</code> tal que <code>g<sup>x</sup> ≡ h (mod p)</code>: fatora
+            <code>p−1</code>, resolve o problema em cada subgrupo de ordem prima e combina
+            tudo com o Teorema Chinês do Resto.
+          </p>
+        </div>
+        <div class="controls">
+          <div class="field">
+            <label for="dlog-p">p (primo)</label>
+            <input id="dlog-p" type="text" inputmode="numeric" value="101" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="dlog-g">g</label>
+            <input id="dlog-g" type="text" inputmode="numeric" value="15" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="dlog-h">h</label>
+            <input id="dlog-h" type="text" inputmode="numeric" value="100" autocomplete="off" spellcheck="false">
+          </div>
+          <button id="dlog-random" class="secondary" type="button">🎲 exemplo aleatório</button>
+          <button id="dlog-run" class="primary" type="button">Resolver</button>
+        </div>
+        <div id="dlog-output" class="output">
+          <p class="hint">Já preenchido com um exemplo — clique em Resolver, ou gere um caso aleatório novo.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Módulos usados nesta página — buscados ao vivo do GitHub, sem cópia local:
+        <code>base.py</code>, <code>util.py</code>, <code>modular_arithmetic.py</code>,
+        <code>primality.py</code>, <code>factorization.py</code>, <code>discrete_log.py</code>.
+      </p>
+      <p class="authors">
+        Chrystian Paulo Ferreira de Melo · Felipe Ribas Muniz · João Marcos Rezende · Sanny Cristiane Moreira de Sales
+      </p>
+    </footer>
+  </div>
+
+  <script type="py" src="./main.py" config="./pyscript.json"></script>
+</body>
+</html>

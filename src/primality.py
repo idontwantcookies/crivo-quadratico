@@ -22,7 +22,17 @@ def miller_test(n:int, b:int, k: int, q: int):
     '''
     if n == 2 or n == -2: return True
     if n % 2 == 0: return False
-    if gcd(n, b) != 1: return True
+    # Um gcd(n, b) que seja fator PRÓPRIO de n prova que n é composto; não é
+    # evidência de que n é primo. O sinal estava invertido aqui, o que inflava
+    # bastante a taxa de falsos positivos de prime_miller_rabin sempre que a
+    # base aleatória calhava de dividir n (ex.: n=21 era classificado como
+    # primo em ~1 a cada 1400 chamadas).
+    # O caso d == n (b múltiplo de n, fora do intervalo que prime_miller_rabin
+    # sorteia) é diferente: a base não carrega informação nenhuma, então o
+    # honesto é devolver "inconclusivo" em vez de acusar n de composto.
+    d = gcd(n, b)
+    if d == n: return True
+    if d != 1: return False
     r = powmod(b, q, n)
     if r == 1 or r == n - 1: return True
     for _ in range(k):
