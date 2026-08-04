@@ -147,7 +147,8 @@ origem) — sem fetch de rede e sem depender de nenhuma branch específica no Gi
 
 A página demonstra o teste de primalidade de Miller-Rabin, com o veredito rodada a rodada,
 o logaritmo discreto por Pohlig-Hellman (com a fatoração de `p − 1` e a verificação do
-resultado), e um terminal Python interativo com os módulos já importados, pra testar a
+resultado), o **crivo quadrático** fatorando N na hora (mostrando `B` e o tempo de
+execução), e um terminal Python interativo com os módulos já importados, pra testar a
 biblioteca sem instalar nada.
 
 Para publicar num fork: **Settings → Pages → Deploy from a branch**, apontando para a

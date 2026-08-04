@@ -107,6 +107,43 @@
           <p class="hint">Já preenchido com um exemplo — clique em Resolver, ou gere um caso aleatório novo.</p>
         </div>
       </section>
+
+      <section class="card" id="qsieve">
+        <div class="card-head">
+          <h2>Fatoração — Crivo Quadrático</h2>
+          <p>
+            Roda <code>quadratic_sieve</code> por inteiro: escolhe o limite de suavidade
+            <code>B</code> (<code>find_B</code>), monta a base de fatores com as raízes de
+            Tonelli-Shanks, peneira o intervalo em busca de relações B-suaves e resolve o
+            núcleo em GF(2) (<code>kernel_gf2</code>) até extrair um fator não trivial de N.
+          </p>
+        </div>
+        <div class="controls">
+          <div class="field grow">
+            <label for="qs-n">N</label>
+            <input id="qs-n" type="text" inputmode="numeric" value="87463" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="qs-preset">exemplos</label>
+            <select id="qs-preset">
+              <option value="">escolher…</option>
+              <option value="87463">87463 (exemplo do README, 5 díg.)</option>
+              <option value="72013990056293">72013990056293 (14 díg.)</option>
+              <option value="811832437639945991">811832437639945991 (18 díg.)</option>
+              <option value="2431261195795078865209">2431261195795078865209 (22 díg.)</option>
+              <option value="727936805326261673906233">727936805326261673906233 (24 díg. · mais lento)</option>
+            </select>
+          </div>
+          <button id="qs-run" class="primary" type="button">Fatorar</button>
+        </div>
+        <div id="qs-output" class="output">
+          <p class="hint">
+            Escolha um N (ou um exemplo) e clique em Fatorar. Os exemplos de 14+ dígitos têm
+            os dois fatores acima de 10⁶, então o crivo roda de verdade em vez de cair na
+            pré-passagem de divisão por tentativa — N grandes podem levar alguns segundos.
+          </p>
+        </div>
+      </section>
       </div>
 
       <div class="tab-panel hidden" id="tab-terminal">
@@ -117,8 +154,9 @@
               Console interativo rodando de verdade no seu navegador (o mesmo Pyodide da
               aba de apresentação). Os módulos deste repositório já estão importados como
               <code>base</code>, <code>util</code>, <code>modular_arithmetic</code>,
-              <code>primality</code>, <code>factorization</code>, <code>discrete_log</code>
-              e <code>rsa</code> — chame as funções direto, sem <code>pip install</code>.
+              <code>primality</code>, <code>factorization</code>, <code>discrete_log</code>,
+              <code>linalg</code>, <code>quadratic_sieve</code> e <code>rsa</code> — chame
+              as funções direto, sem <code>pip install</code>.
             </p>
           </div>
           <div class="terminal">
@@ -126,7 +164,7 @@
               <p class="hint">
                 Experimente, por exemplo: <code>primality.prime_miller_rabin(97)</code>,
                 <code>factorization.pollard_rho_prime_power_decomposition(360)</code> ou
-                <code>modular_arithmetic.powmod(2, 10, 1000)</code>.
+                <code>quadratic_sieve.quadratic_sieve(87463)</code>.
               </p>
             </div>
             <div class="term-input-row">
@@ -148,7 +186,8 @@
       <p>
         Módulos usados nesta página — buscados ao vivo do GitHub, sem cópia local:
         <code>base.py</code>, <code>util.py</code>, <code>modular_arithmetic.py</code>,
-        <code>primality.py</code>, <code>factorization.py</code>, <code>discrete_log.py</code>.
+        <code>primality.py</code>, <code>factorization.py</code>, <code>discrete_log.py</code>,
+        <code>linalg.py</code>, <code>quadratic_sieve.py</code>.
       </p>
       <p class="authors">
         Felipe Ribas Muniz · Chrystian Paulo Ferreira de Melo · João Marcos Rezende · Sanny Cristiane Moreira de Sales

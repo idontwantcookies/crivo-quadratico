@@ -1,4 +1,5 @@
 {
+  "packages": ["sympy"],
   "files": {
     "{SRC}": "./src",
     "{DEST}": "./src/",
@@ -9,6 +10,8 @@
     "{SRC}/primality.py": "{DEST}",
     "{SRC}/factorization.py": "{DEST}",
     "{SRC}/discrete_log.py": "{DEST}",
-    "{SRC}/rsa.py": "{DEST}"
+    "{SRC}/rsa.py": "{DEST}",
+    "{SRC}/linalg.py": "{DEST}",
+    "{SRC}/quadratic_sieve.py": "{DEST}"
   }
 }

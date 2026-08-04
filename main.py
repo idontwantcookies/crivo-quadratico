@@ -21,7 +21,9 @@ from src.discrete_log import pohlig_hellman
 from src.factorization import pollard_rho_prime_power_decomposition
 from src.modular_arithmetic import find_generator, is_generator, powmod
 from src.primality import miller_test, prime_miller_rabin
+from src.quadratic_sieve import find_B, quadratic_sieve
 from src.rsa import random_prime
+from src.util import SieveTimeout
 
 # ---------------------------------------------------------------- boot ----
 
@@ -226,6 +228,70 @@ async def dlog_run(event=None):
         button.disabled = False
 
 
+# --------------------------------------------------------- fatoração -----
+
+QS_MAX_DIGITS = 26
+QS_TIMEOUT = 30  # segundos — mais folgado que o padrão da lib (15s), pra compensar o WASM
+
+
+@when("change", "#qs-preset")
+def qs_preset_change(event):
+    value = event.target.value
+    if value:
+        web.page["qs-n"].value = value
+
+
+@when("click", "#qs-run")
+async def qs_run(event=None):
+    out = web.page["qs-output"]
+    button = web.page["qs-run"]
+
+    try:
+        n = parse_int(web.page["qs-n"].value)
+    except ValueError:
+        out.innerHTML = "<p class='error'>Digite um inteiro válido.</p>"
+        return
+
+    if n < 3:
+        out.innerHTML = "<p class='error'>N precisa ser maior ou igual a 3.</p>"
+        return
+    if len(str(n)) > QS_MAX_DIGITS:
+        out.innerHTML = f"<p class='error'>Use um N com até {QS_MAX_DIGITS} dígitos, pra manter a demo razoável no navegador.</p>"
+        return
+
+    button.disabled = True
+    try:
+        B = find_B(n)
+    except ValueError:
+        out.innerHTML = "<p class='error'>find_B calcula log(log(N)) — N precisa ser maior que 2.</p>"
+        button.disabled = False
+        return
+
+    out.innerHTML = f"<p class='pending'>B = {B} · peneirando relações B-suaves…</p>"
+    await asyncio.sleep(0.02)  # deixa o navegador repintar antes da chamada síncrona
+
+    try:
+        t0 = time.perf_counter()
+        d = quadratic_sieve(n, timeout=QS_TIMEOUT)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        cofactor = n // d
+        check = d * cofactor
+
+        out.innerHTML = f"""
+          <div class="result ok">{n} = {d} × {cofactor}</div>
+          <p class="meta">quadratic_sieve(n) · B = {B} · {elapsed_ms:.1f} ms</p>
+          <p class="verify">verificação: {d} × {cofactor} = {check} {'✅ bate com N' if check == n else '❌ não bate com N'}</p>
+        """
+    except SieveTimeout as exc:
+        out.innerHTML = f"<p class='error'>{exc}</p>"
+    except RuntimeError as exc:
+        out.innerHTML = f"<p class='error'>{exc} (N pode ser primo, ou pequeno demais para o crivo — veja a tabela de entrada válida no README).</p>"
+    except Exception as exc:  # noqa: BLE001 - mostra qualquer erro real da lib ao usuário
+        out.innerHTML = f"<p class='error'>{type(exc).__name__}: {exc}</p>"
+    finally:
+        button.disabled = False
+
+
 # --------------------------------------------------------- terminal ------
 # Console interativo: cada bloco digitado roda num namespace persistente que
 # já vem com os módulos reais do repositório importados (mesmos usados nos
@@ -236,8 +302,10 @@ def make_terminal_namespace() -> dict:
     import src.base as base
     import src.discrete_log as discrete_log
     import src.factorization as factorization
+    import src.linalg as linalg
     import src.modular_arithmetic as modular_arithmetic
     import src.primality as primality
+    import src.quadratic_sieve as quadratic_sieve
     import src.rsa as rsa
     import src.util as util
 
@@ -249,6 +317,8 @@ def make_terminal_namespace() -> dict:
         "primality": primality,
         "factorization": factorization,
         "discrete_log": discrete_log,
+        "linalg": linalg,
+        "quadratic_sieve": quadratic_sieve,
         "rsa": rsa,
         "random": random,
     }
